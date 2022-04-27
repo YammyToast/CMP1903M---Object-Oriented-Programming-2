@@ -5,7 +5,7 @@ namespace DiceGame {
     class Program {
 
         public static void Main(string[] args) {
-            Console.WriteLine("Test");
+            Console.WriteLine("CMP1903M Object Oriented Programming 2");
         }
     }
 }
