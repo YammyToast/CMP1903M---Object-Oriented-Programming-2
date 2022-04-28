@@ -5,8 +5,8 @@ namespace DiceGame
 {
     class Program {
 
-        Gamemode gamemode = Gamemode.PVP;
-        int winCondition = 30;
+        static Gamemode gamemode = Gamemode.PVP;
+        static int winCondition = 30;
 
         /// Features:
         /// Game Class
@@ -17,10 +17,7 @@ namespace DiceGame
         /// Exception Handling
         /// Testing Strategy (Outlined in TestHandler)
 
-        /// Game Logic:
-        /// Players take turns rolling five dice and score for three-of-a-kind or better. If a player only has
-        /// two-of-a-kind, they may re-throw the remaining dice in an attempt to improve the remaining
-        /// dice values. If no matching numbers are rolled after two rolls, the player scores 0.
+
 
         public static void Main(string[] args) {
 
@@ -53,7 +50,7 @@ namespace DiceGame
                 // ======== Setup ========
                 if (state == State.Setup)
                 {
-                    Console.WriteLine("Setup");
+                    Setup();
                     state = State.Menu;
                 }
                 // // ======== Game ========
@@ -77,9 +74,47 @@ namespace DiceGame
                 
         }
 
-        private static void Setup() { 
+        private static void Setup() {
             // Ask for gamemode & win-condition
+            string input = string.Empty;
+            int inputCondition = 0;
+            // ======== Set Gamemode ========
+            Console.Write($"\n\nSet Gamemode (Currently: {gamemode}) [PVP], [PVC] : ");
+            try
+            {
+                input = Console.ReadLine();
+                foreach (Gamemode checkGame in Enum.GetValues(typeof(Gamemode)))
+                {
+                    if (input.ToLower() == checkGame.ToString().ToLower())
+                    {
+                        // If a valid sort is given, overwrite the default.
+                        gamemode = checkGame;
+                    }
+                }
 
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex);
+            }
+            Console.WriteLine($"Gamemode is now: {gamemode}");
+
+            // ======== Set Win Condition ========
+            Console.Write($"Set Win-Condition (Currently: {winCondition}pts) : ");
+            try
+            {
+                input = Console.ReadLine();
+                
+                if (Int32.TryParse(input, out inputCondition) == true) {
+                    if (inputCondition > 0 && inputCondition < Int32.MaxValue) { 
+                        winCondition = inputCondition;
+                    }
+                }
+
+            }
+            catch (Exception ex) {
+                Console.WriteLine(ex);
+            }
+            Console.WriteLine($"Win-Condition is now: {winCondition} \n\n");
         }
 
 
