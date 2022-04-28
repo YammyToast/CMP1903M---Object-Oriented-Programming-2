@@ -56,7 +56,16 @@ namespace DiceGame
                 // // ======== Game ========
                 else if (state == State.Game)
                 {
-                    Console.WriteLine("Game");
+                    PVP game = new PVP();
+                    List<Die> dice = new List<Die>();
+                    dice.Add(new Die());
+                    dice.Add(new Die());
+                    dice.Add(new Die());
+                    dice.Add(new Die());
+                    dice.Add(new Die());
+                    Console.WriteLine("Rolling");
+                    game.RollDice(RollState.Partial, dice);
+
                     state = State.Menu;
                 }
                 // ======== Exit ========
