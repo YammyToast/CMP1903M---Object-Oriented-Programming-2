@@ -10,14 +10,14 @@ namespace DiceGame
 
     internal class Die
     {
-        public int value { get; set; }
+        public int Value { get; set; }
 
-        public bool active = true;
+        public bool Active = true;
 
         public void Roll(int lowerBoundary, int upperBoundary) { 
             Random rand = new Random();
             int randomNumber = rand.Next(lowerBoundary, upperBoundary);
-            value = randomNumber;
+            Value = randomNumber;
         }
     }
 }

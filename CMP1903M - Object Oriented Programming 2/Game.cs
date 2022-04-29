@@ -5,7 +5,7 @@
     interface IGame
     {
 
-        void Turn();
+        abstract void Turn();
 
 
     }
@@ -13,14 +13,19 @@
     internal class Logic
     {
 
-        List<int> scores = new List<int>(2);
-        List<int> diceRolls = new List<int>(5);
-
+        public List<int> diceRolls = new List<int>(5);
+        private List<int> scores = new List<int>(2);
+        private int numberOfDice = 0;
 
         int winCondition
         {
             get;
             set;
+        }
+
+        public Logic(int winCondition, int numberOfDice) {
+            this.winCondition = winCondition;
+            this.numberOfDice = numberOfDice;
         }
 
         /// Game Logic:
@@ -40,9 +45,9 @@
         {
             // ==== Dice Rolling ==== 
             foreach (Die die in dice) {
-                if (die.active == true) {
+                if (die.Active == true) {
                     die.Roll(1, 6);
-                    Console.Write($"{die.value} ");
+
                 }   
             }
 
@@ -50,29 +55,59 @@
             IDictionary<int, int> occurences = new Dictionary<int, int>();
             foreach (Die diceRollsItem in dice)
             {
-                if (occurences.ContainsKey(diceRollsItem.value))
+                if (occurences.ContainsKey(diceRollsItem.Value))
                 {
-                    occurences[diceRollsItem.value]++;
+                    occurences[diceRollsItem.Value]++;
                 }
                 else
                 {
-                    occurences.Add(diceRollsItem.value, 1);
+                    occurences.Add(diceRollsItem.Value, 1);
                 }
             }
+            // var orderedDice = dice.OrderBy(x => x.value).ToList();
+            
+            // ==== Ordering and Score Counting ====
+            // Finds most occuring dice roll
             var orderedOccurences = occurences.OrderBy(x => x.Value).Reverse().ToDictionary(x => x.Key, x => x.Value);
+            // Calculates the score to give the player based on the number of recurring values.
             int score = (orderedOccurences.First().Value > 2) ? (int)(3 * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
             int occurence = orderedOccurences.First().Value;
+            
+            // Orders the dice objects so that matching values are grouped, with the most frequent values first.
+            // i.e: 2 2 5 2 6 5   =>   2 2 2 5 5 6
+            List<Die> orderedDice = new List<Die>();
+            foreach (KeyValuePair<int, int> kvp in orderedOccurences) {
+                foreach (Die die in dice) {
+                    if (die.Value == kvp.Key) {
+                        orderedDice.Add(die);
+                    }
+                }
+
+            }
+
 
             Console.WriteLine($"\n\n{score}");
 
+            // ==== Re-roll Logic ====
+            // Set all dice that are part of the valid match to inactive, so they can't be rolled again.
+            foreach (Die die in dice) {
+                if (die.Value == orderedOccurences.First().Key) {
+                    die.Active = false;
+                }
+                //Console.Write($"{die.active} ");
+            }
+
+            // If statements are needed as switch case can only handle constant values.
             if (occurence == 0) {
                 rollState = RollState.None;
             } else if (occurence == dice.Count) {
                 rollState = RollState.Full;
             } else {
-                rollState = RollState.Partial;
+                rollState = RollState.Reroll;
             }
-            return (rollState, new List<Die>(), score, occurence);
+
+
+            return (rollState, orderedDice, score, occurence);
         }
 
         
@@ -81,14 +116,28 @@
 
     internal class PVP : Logic, IGame
     {
+        public PVP(int winCondition, int numberOfDice) : base(winCondition, numberOfDice) 
+        {
+            
+        }
+
         void IGame.Turn()
         {
-
+            List<Die> dice = new List<Die>();
+            dice.Add(new Die());
+            dice.Add(new Die());
+            dice.Add(new Die());
+            dice.Add(new Die());
+            dice.Add(new Die());
+            Console.WriteLine("Rolling");
+            RollDice(RollState.Reroll, dice);
         }
     }
 
     internal class PVC : Logic, IGame
     {
+        public PVC(int winCondition, int numberOfDice) : base(winCondition, numberOfDice) { }
+
         void IGame.Turn()
         {
 
@@ -99,7 +148,7 @@
     public enum RollState
     {
         None,
-        Partial,
+        Reroll,
         Full
     }
 

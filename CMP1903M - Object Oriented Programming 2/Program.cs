@@ -56,15 +56,14 @@ namespace DiceGame
                 // // ======== Game ========
                 else if (state == State.Game)
                 {
-                    PVP game = new PVP();
-                    List<Die> dice = new List<Die>();
-                    dice.Add(new Die());
-                    dice.Add(new Die());
-                    dice.Add(new Die());
-                    dice.Add(new Die());
-                    dice.Add(new Die());
-                    Console.WriteLine("Rolling");
-                    game.RollDice(RollState.Partial, dice);
+                    if (gamemode == Gamemode.PVP)
+                    {
+                        PVP game = new PVP(winCondition, 5);
+                        
+                    }
+                    else {
+                        PVC game = new PVC(winCondition, 5);
+                    }
 
                     state = State.Menu;
                 }
