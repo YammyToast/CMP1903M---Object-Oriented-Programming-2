@@ -58,11 +58,12 @@ namespace DiceGame
                 {
                     if (gamemode == Gamemode.PVP)
                     {
-                        PVP game = new PVP(winCondition, 5);
-                        
+                        PVP game = new PVP(winCondition, 5, 2);
+                        IGame gameHandler = game;
+                        gameHandler.Game();
                     }
                     else {
-                        PVC game = new PVC(winCondition, 5);
+                        PVC game = new PVC(winCondition, 5, 2);
                     }
 
                     state = State.Menu;

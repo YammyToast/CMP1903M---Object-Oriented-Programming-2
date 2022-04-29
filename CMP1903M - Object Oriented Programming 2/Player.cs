@@ -8,7 +8,11 @@ namespace DiceGame
 {
     internal class Player
     {
-        private int score;
+        public int Score;
+        public List<int> dice;
 
+        public Player(int numberOfDice) {
+            dice = new List<int>(numberOfDice);
+        }
     }
 }
