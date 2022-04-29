@@ -23,6 +23,7 @@
             this.numberOfDice = numberOfDice;
             this.numberOfPlayers = numberOfPlayers;
             scores = new List<int>(numberOfPlayers);
+
         }
 
         /// Game Logic:
@@ -94,12 +95,12 @@
             }
 
             // If statements are needed as switch case can only handle constant values.
-            if (occurence < 2) {
-                rollState = RollState.None;
+            if (occurence == 2) {
+                rollState = RollState.Reroll;
             } else if (occurence == dice.Count) {
                 rollState = RollState.Full;
             } else {
-                rollState = RollState.Reroll;
+                rollState = RollState.None;
             }
 
 
@@ -119,19 +120,47 @@
         {
             List<Player> playerList = new List<Player>();
 
+            int playerIndex = 1;
             for (int i = 0; i < numberOfPlayers; i++) {
-                playerList.Add(new Player(numberOfDice));
+                playerList.Add(new Player(playerIndex));
+                playerIndex++;
             }
 
+            // ==== MAIN LOOP ====
             bool finishedState = false;
+            (RollState resultantState, List<Die> dice, int scored) turnResults = (RollState.None, new List<Die>(), -1);
             while (finishedState == false) {
-                
-                foreach (Player player in playerList) { 
-                    Turn(player);
+
+                // Writes the scoreboard at the start of each turn rotation.
+                foreach (Player player in playerList) {
+                    Console.WriteLine($"> Player {player.ID} : {player.Score}");
+                }
+
+                // Cycle through each player, giving them a turn.
+                foreach (Player player in playerList) {
+                    Console.WriteLine($"Player {player.ID}'s Turn:");
+
+                    List<Die> dice = new List<Die>();
+                    for (int i = 0; i < numberOfDice; i++) {
+                        dice.Add(new Die());
+                    }
+
+                    RollState rollState = RollState.Reroll;
+                    while (rollState == RollState.Reroll) {
+                        turnResults = Turn(dice);
+                        
+                        dice = turnResults.dice;
+                        rollState = turnResults.resultantState;
+
+                    }
+                    player.Score += turnResults.scored;
+                    Console.WriteLine($"Scored: {turnResults.scored}\n");
+
                     // Check if the player has won.
                     if (player.Score >= winCondition)
                     {
                         finishedState = true;
+                        break;
                     }
                     else
                     {
@@ -141,21 +170,38 @@
                 }
             
             }
+            Console.WriteLine("\n\n\n\n\n\n\n\nGAME HAS ENDED YOU FUCKS");
         }
 
-        private RollState Turn(Player player)
+        private (RollState resultantState, List<Die> dice, int scored) Turn(List<Die> dice)
         {
-            List<Die> dice = new List<Die>();
-            dice.Add(new Die());
-            dice.Add(new Die());
-            dice.Add(new Die());
-            Console.WriteLine("Rolling");
-            (RollState rollState, List<Die> Dice, int score, int occurences) rollResults = RollDice(RollState.Reroll, dice);
-            Console.WriteLine(rollResults.rollState);
-            foreach (Die die in rollResults.Dice) {
-                Console.WriteLine($"> {die.Value}, {die.Active}");
+            // Checks for key-input before rolling.
+            Console.WriteLine("\nPress [Enter] to Roll");
+            Console.ReadKey();
+            // ==== ROLLS THE DICE ====
+            (RollState rollState, List<Die> dice, int score, int occurences) rollResults = RollDice(RollState.Reroll, dice);
+
+            // ==== Returns results to the User ====
+            foreach (Die die in rollResults.dice)
+            {
+                Console.Write($"{die.Value} | ");
             }
-            return rollResults.rollState;
+            Console.WriteLine("\n\n");
+            switch (rollResults.rollState) {
+                case RollState.None:
+                    Console.WriteLine($"Rolled for {rollResults.occurences} of a kind.");
+                    break;
+                case RollState.Reroll:
+                    Console.WriteLine($"Rolled {rollResults.occurences} of a kind, roll for the chance for more! ");
+                    break;
+                case RollState.Full:
+                    Console.WriteLine($"Rolled {rollResults.occurences} for a FULL HOUSE !");
+                    break;
+            }
+            
+
+
+            return (rollResults.rollState, rollResults.dice, rollResults.score);
         }
     }
 
