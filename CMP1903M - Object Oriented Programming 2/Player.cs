@@ -10,10 +10,12 @@ namespace DiceGame
     {
         public int ID;
         public int Score;
+        public bool isBot;
 
-        public Player(int ID) {
+        public Player(int ID, bool isBot = false) {
             this.ID = ID;
             Score = 0;
+            this.isBot = isBot;
         }
     }
 }
