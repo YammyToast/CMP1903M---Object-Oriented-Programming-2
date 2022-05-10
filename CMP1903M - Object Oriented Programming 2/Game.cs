@@ -5,25 +5,32 @@
     interface IGame
     {
         void Game();
+        void CreatePlayers(int playerCount, int botCount = 0);
 
 
 
     }
 
-    internal class Logic
+    internal abstract class Logic
     {
 
         protected int winCondition;
         protected int numberOfDice;
         protected int numberOfPlayers;
         protected List<int> scores;
+        protected List<Player> playerList;
 
         public Logic(int winCondition, int numberOfDice, int numberOfPlayers) {
             this.winCondition = winCondition;
             this.numberOfDice = numberOfDice;
             this.numberOfPlayers = numberOfPlayers;
             scores = new List<int>(numberOfPlayers);
+            playerList = new List<Player>();
 
+        }
+
+        virtual protected void DisplayWinMessage(Player player) { 
+            
         }
 
         /// Game Logic:
@@ -67,8 +74,10 @@
             // ==== Ordering and Score Counting ====
             // Finds most occuring dice roll
             var orderedOccurences = occurences.OrderBy(x => x.Value).Reverse().ToDictionary(x => x.Key, x => x.Value);
+
             // Calculates the score to give the player based on the number of recurring values.
             int score = (orderedOccurences.First().Value > 2) ? (int)(3 * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
+            
             int occurence = orderedOccurences.First().Value;
 
             // Orders the dice objects so that matching values are grouped, with the most frequent values first.
@@ -107,6 +116,99 @@
             return (rollState, orderedDice, score, occurence);
         }
 
+        protected void DisplayDiceTable(List<Die> dice, int occurences) {
+            // Gets console width to allow for table to be centered.
+            int consoleWidth = Console.WindowWidth;
+
+            // ==== Determine the longest line in the table ====
+            string diceBuffer = "";
+            foreach (Die die in dice) {
+                diceBuffer += (die == dice.Last()) ? $" {die.Value } " : $" {die.Value } │";
+            }
+            string occurencesBuffer = $"── Rolled for {occurences} of a kind ──";
+
+            int longestLength = (diceBuffer.Length > occurencesBuffer.Length) ? diceBuffer.Length : occurencesBuffer.Length;
+
+
+            // ==== Construct each line of the table ====
+            string headerBars = new string('─', longestLength);
+            string header = $"┌{headerBars[..((headerBars.Length / 2) - 1)]} Dice {headerBars[((headerBars.Length / 2) + 3)..]}┐";
+
+            string diceBars = new string(' ', (longestLength - diceBuffer.Length) + 2);
+            string diceLine = $"│{diceBars[..(diceBars.Length / 2)]}{diceBuffer}{diceBars[(diceBars.Length / 2)..]}│"; 
+
+            string footerBars = new string('─', longestLength - occurencesBuffer.Length);
+            string footer = $"└{footerBars[..(footerBars.Length / 2)]}─{occurencesBuffer}─{footerBars[(footerBars.Length / 2)..]}┘"; 
+
+            int tableIndent = (consoleWidth / 2) - (longestLength / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            // ==== Write the table to the console ====
+            Console.WriteLine($"{tablePadding}{header}");
+            Console.WriteLine($"{tablePadding}{diceLine}");
+            Console.WriteLine($"{tablePadding}{footer}");
+        }
+
+        protected void DisplayGameScoreTable(List<Player> playerList) {
+            int consoleWidth = Console.WindowWidth;
+
+
+            int longestLength = 0;
+            foreach (Player player in playerList) {
+                if (player.ID.ToString().Length + player.Score.ToString().Length + 18 > longestLength) longestLength = player.ID.ToString().Length + player.Score.ToString().Length + 18;
+            }
+
+            // ==== Construct each line of the table ====
+            string headerBars = new string('─', longestLength);
+            string header = $"┌{headerBars[..((headerBars.Length / 2) - 3)]} Scores {headerBars[((headerBars.Length / 2) + 3)..]}┐";
+
+            string scoreBars = new string(' ', longestLength);
+
+            string footerBars = new string('─', longestLength);
+            string footer = $"└{footerBars[..(footerBars.Length / 2)]}──{footerBars[(footerBars.Length / 2)..]}┘";
+
+
+
+            int tableIndent = (consoleWidth / 2) - (longestLength / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            // ==== Write the table to the console ====
+            Console.WriteLine($"{tablePadding}{header}");
+            foreach (Player player in playerList) {
+                int currentLineLength = longestLength - (player.ID.ToString().Length + player.Score.ToString().Length + 18);
+                Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  Player - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
+            }
+            Console.WriteLine($"{tablePadding}{footer}");
+        }
+
+        protected void DisplayTurnScoreTable(RollState rollState, int score) { 
+            
+            int consoleWidth = Console.WindowWidth;
+            string textBuffer = string.Empty;
+
+            switch (rollState) {
+                case RollState.Full:
+                    textBuffer = $"MAXIMUM POINTS: {score}";
+                    break;
+                case RollState.Reroll:
+                    textBuffer = $"You got a re-roll!";
+                    break;
+                default:
+                    textBuffer = $"You scored: {score}";
+                    break;
+            }
+
+            int tableIndent = (consoleWidth / 2) - (textBuffer.Length / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            string tableBars = new string('─', textBuffer.Length + 2);
+
+
+            Console.WriteLine($"{tablePadding}┌{tableBars}┐");
+            Console.WriteLine($"{tablePadding}│ {textBuffer} │");
+            Console.WriteLine($"{tablePadding}└{tableBars}┘");
+        }
+
 
         
 
@@ -116,25 +218,30 @@
     {
         public PVP(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) {}
 
-        void IGame.Game()
-        {
-            List<Player> playerList = new List<Player>();
+        void IGame.CreatePlayers(int playerCount, int botCount) {
 
             int playerIndex = 1;
-            for (int i = 0; i < numberOfPlayers; i++) {
-                playerList.Add(new Player(playerIndex));
+            for (int i = 0; i < numberOfPlayers; i++)
+            {
+                playerList.Add(new Player(playerIndex, true));
                 playerIndex++;
             }
+        }
 
+        void IGame.Game()
+        {
+            
             // ==== MAIN LOOP ====
             bool finishedState = false;
             (RollState resultantState, List<Die> dice, int scored) turnResults = (RollState.None, new List<Die>(), -1);
             while (finishedState == false) {
 
                 // Writes the scoreboard at the start of each turn rotation.
-                foreach (Player player in playerList) {
-                    Console.WriteLine($"> Player {player.ID} : {player.Score}");
-                }
+                // TODO: Add scoreboard function.
+                //foreach (Player player in playerList) {
+                //    Console.WriteLine($"> Player {player.ID} : {player.Score}");
+                //}
+                DisplayGameScoreTable(playerList);
 
                 // Cycle through each player, giving them a turn.
                 foreach (Player player in playerList) {
@@ -146,15 +253,145 @@
                     }
 
                     RollState rollState = RollState.Reroll;
+                    RollState lastState = RollState.None;
+                    int scored = 0;
                     while (rollState == RollState.Reroll) {
                         turnResults = Turn(dice);
-                        
+
                         dice = turnResults.dice;
+                        scored = turnResults.scored;
+
+                        if (turnResults.resultantState == RollState.Reroll && lastState != RollState.Reroll)
+                        {
+                            DisplayTurnScoreTable(rollState, turnResults.scored);
+                        }
+                        // Handles case where re-roll occurs twice.
+                        else if (turnResults.resultantState == RollState.Reroll && lastState == RollState.Reroll) {
+                            scored = 0;
+                            // NO MORE REROLLING!!!!!
+                            turnResults.resultantState = RollState.None;
+                        }
+
                         rollState = turnResults.resultantState;
+                        lastState = turnResults.resultantState;
 
                     }
-                    player.Score += turnResults.scored;
-                    Console.WriteLine($"Scored: {turnResults.scored}\n");
+                    player.Score += scored;
+
+                    DisplayTurnScoreTable(rollState, scored);
+
+
+                    // Check if the player has won.
+                    if (player.Score >= winCondition)
+                    {
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        // Remove this upon creating tie-breaker.
+                        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        DisplayWinMessage(player);
+                        DisplayGameScoreTable(playerList);
+                        finishedState = true;
+                        break;
+                    }
+                    else
+                    {
+                        finishedState = false;
+                    }
+
+                }
+            
+            }
+            
+        }
+
+        private (RollState resultantState, List<Die> dice, int scored) Turn(List<Die> dice)
+        {
+            // Checks for key-input before rolling.
+            Console.WriteLine("\nPress [Enter] to Roll");
+            Console.ReadKey();
+            // ==== ROLLS THE DICE ====
+            (RollState rollState, List<Die> dice, int score, int occurences) rollResults = RollDice(RollState.Reroll, dice);
+
+            // ==== Returns results to the User ====
+            DisplayDiceTable(rollResults.dice, rollResults.occurences);
+
+            return (rollResults.rollState, rollResults.dice, rollResults.score);
+        }
+
+        
+    }   
+
+    internal class PVC : Logic, IGame
+    {
+        public PVC(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) { }
+
+        void IGame.CreatePlayers(int playerCount, int botCount) {
+            int playerIndex = 1;
+            for (int i = 0; i < playerCount; i++)
+            {
+                playerList.Add(new Player(playerIndex, false));
+                playerIndex++;
+            }
+            for (int j = 0; j < botCount; j++) {
+                playerList.Add(new Player(playerIndex, true));
+                playerIndex++;
+            }
+        }
+
+        void IGame.Game() {
+            // ==== MAIN LOOP ====
+            bool finishedState = false;
+            (RollState resultantState, List<Die> dice, int scored) turnResults = (RollState.None, new List<Die>(), -1);
+            while (finishedState == false)
+            {
+
+                // Writes the scoreboard at the start of each turn rotation.
+                // TODO: Add scoreboard function.
+                foreach (Player player in playerList)
+                {
+                    Console.WriteLine($"> Player {player.ID} : {player.Score}");
+                }
+
+                // Cycle through each player, giving them a turn.
+                foreach (Player player in playerList)
+                {
+                    Console.WriteLine($"Player {player.ID}'s Turn:");
+
+                    List<Die> dice = new List<Die>();
+                    for (int i = 0; i < numberOfDice; i++)
+                    {
+                        dice.Add(new Die());
+                    }
+
+                    RollState rollState = RollState.Reroll;
+                    RollState lastState = RollState.None;
+                    int scored = 0;
+                    while (rollState == RollState.Reroll)
+                    {
+                        turnResults = Turn(dice, player.isBot);
+
+                        dice = turnResults.dice;
+                        scored = turnResults.scored;
+
+                        if (turnResults.resultantState == RollState.Reroll && lastState != RollState.Reroll)
+                        {
+                            DisplayTurnScoreTable(rollState, turnResults.scored);
+                        }
+                        // Handles case where re-roll occurs twice.
+                        else if (turnResults.resultantState == RollState.Reroll && lastState == RollState.Reroll)
+                        {
+                            scored = 0;
+                            // NO MORE REROLLING!!!!!
+                            turnResults.resultantState = RollState.None;
+                        }
+
+                        rollState = turnResults.resultantState;
+                        lastState = turnResults.resultantState;
+
+                    }
+                    player.Score += scored;
+
+                    DisplayTurnScoreTable(rollState, scored);
+
 
                     // Check if the player has won.
                     if (player.Score >= winCondition)
@@ -168,54 +405,35 @@
                     }
 
                 }
-            
-            }
-            Console.WriteLine("\n\n\n\n\n\n\n\nGAME HAS ENDED YOU FUCKS");
-        }
 
-        private (RollState resultantState, List<Die> dice, int scored) Turn(List<Die> dice)
+            }
+            Console.WriteLine("Game Over");
+
+        }
+        private (RollState resultantState, List<Die> dice, int scored) Turn(List<Die> dice, bool isBot)
         {
             // Checks for key-input before rolling.
-            Console.WriteLine("\nPress [Enter] to Roll");
-            Console.ReadKey();
+            if (isBot)
+            {
+                Thread.Sleep(1000);
+            }
+            else {
+                Console.WriteLine("\nPress [Enter] to Roll");
+                Console.ReadKey();
+            }
+            
             // ==== ROLLS THE DICE ====
             (RollState rollState, List<Die> dice, int score, int occurences) rollResults = RollDice(RollState.Reroll, dice);
 
             // ==== Returns results to the User ====
-            foreach (Die die in rollResults.dice)
-            {
-                Console.Write($"{die.Value} | ");
-            }
-            Console.WriteLine("\n\n");
-            switch (rollResults.rollState) {
-                case RollState.None:
-                    Console.WriteLine($"Rolled for {rollResults.occurences} of a kind.");
-                    break;
-                case RollState.Reroll:
-                    Console.WriteLine($"Rolled {rollResults.occurences} of a kind, roll for the chance for more! ");
-                    break;
-                case RollState.Full:
-                    Console.WriteLine($"Rolled {rollResults.occurences} for a FULL HOUSE !");
-                    break;
-            }
-            
-
+            DisplayDiceTable(rollResults.dice, rollResults.occurences);
 
             return (rollResults.rollState, rollResults.dice, rollResults.score);
         }
-    }
 
-    internal class PVC : Logic, IGame
-    {
-        public PVC(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) { }
-
-        void IGame.Game() {
-            Turn();
-            
-        }
-        private RollState Turn()
+        protected override void DisplayWinMessage(Player player)
         {
-            return RollState.None;
+
         }
 
     }

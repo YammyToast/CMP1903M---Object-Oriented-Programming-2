@@ -60,10 +60,14 @@ namespace DiceGame
                     {
                         PVP game = new PVP(winCondition, 5, 2);
                         IGame gameHandler = game;
+                        gameHandler.CreatePlayers(2);
                         gameHandler.Game();
                     }
                     else {
                         PVC game = new PVC(winCondition, 5, 2);
+                        IGame gameHandler = game;
+                        gameHandler.CreatePlayers(1, 1);
+                        gameHandler.Game();
                     }
 
                     state = State.Menu;
