@@ -74,8 +74,10 @@
             // ==== Ordering and Score Counting ====
             // Finds most occuring dice roll
             var orderedOccurences = occurences.OrderBy(x => x.Value).Reverse().ToDictionary(x => x.Key, x => x.Value);
+
             // Calculates the score to give the player based on the number of recurring values.
             int score = (orderedOccurences.First().Value > 2) ? (int)(3 * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
+            
             int occurence = orderedOccurences.First().Value;
 
             // Orders the dice objects so that matching values are grouped, with the most frequent values first.
@@ -148,9 +150,35 @@
         }
 
         protected void DisplayGameScoreTable(List<Player> playerList) {
+            int consoleWidth = Console.WindowWidth;
+
+
+            int longestLength = 0;
+            foreach (Player player in playerList) {
+                if (player.ID.ToString().Length + player.Score.ToString().Length + 18 > longestLength) longestLength = player.ID.ToString().Length + player.Score.ToString().Length + 18;
+            }
+
+            // ==== Construct each line of the table ====
+            string headerBars = new string('─', longestLength);
+            string header = $"┌{headerBars[..((headerBars.Length / 2) - 3)]} Scores {headerBars[((headerBars.Length / 2) + 3)..]}┐";
+
+            string scoreBars = new string(' ', longestLength);
+
+            string footerBars = new string('─', longestLength);
+            string footer = $"└{footerBars[..(footerBars.Length / 2)]}──{footerBars[(footerBars.Length / 2)..]}┘";
 
 
 
+            int tableIndent = (consoleWidth / 2) - (longestLength / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            // ==== Write the table to the console ====
+            Console.WriteLine($"{tablePadding}{header}");
+            foreach (Player player in playerList) {
+                int currentLineLength = longestLength - (player.ID.ToString().Length + player.Score.ToString().Length + 18);
+                Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  Player - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
+            }
+            Console.WriteLine($"{tablePadding}{footer}");
         }
 
         protected void DisplayTurnScoreTable(RollState rollState, int score) { 
@@ -210,9 +238,10 @@
 
                 // Writes the scoreboard at the start of each turn rotation.
                 // TODO: Add scoreboard function.
-                foreach (Player player in playerList) {
-                    Console.WriteLine($"> Player {player.ID} : {player.Score}");
-                }
+                //foreach (Player player in playerList) {
+                //    Console.WriteLine($"> Player {player.ID} : {player.Score}");
+                //}
+                DisplayGameScoreTable(playerList);
 
                 // Cycle through each player, giving them a turn.
                 foreach (Player player in playerList) {
@@ -259,6 +288,7 @@
                         // Remove this upon creating tie-breaker.
                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         DisplayWinMessage(player);
+                        DisplayGameScoreTable(playerList);
                         finishedState = true;
                         break;
                     }
