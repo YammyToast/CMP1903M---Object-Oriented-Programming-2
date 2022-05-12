@@ -5,8 +5,9 @@ namespace DiceGame
 {
     class Program {
 
-        static Gamemode gamemode = Gamemode.PVP;
+
         static int winCondition = 30;
+        static Settings gameSettings;
 
         /// Features:
         /// Game Class
@@ -21,6 +22,12 @@ namespace DiceGame
 
         public static void Main(string[] args) {
 
+            gameSettings = new Settings();
+            gameSettings.playerCount = 2;
+            gameSettings.botCount = 0;
+            gameSettings.diceCount = 5;
+            gameSettings.scoreToWin = 30;
+            gameSettings.scoreMultiplier = 3;
 
             State state = State.Menu;
 
@@ -28,10 +35,22 @@ namespace DiceGame
 
                 string stateInput = string.Empty;
 
+                int[] setValues = new int[5] { gameSettings.playerCount, gameSettings.botCount, gameSettings.diceCount, gameSettings.scoreToWin, gameSettings.scoreMultiplier };
+                int parameterIndex = 0;
+                Console.WriteLine("\n| Game Settings |");
+                foreach (Parameters parameter in Enum.GetValues(typeof(Parameters)))
+                {
+                    Console.WriteLine($"{parameter} -> {setValues[parameterIndex]}");
+                    parameterIndex++;
+                }
+
+                Console.WriteLine("\n\n");
                 foreach (State stateStr in Enum.GetValues(typeof(State))) { 
                     // Write all options. Except the Menu-state.
                     if (stateStr != State.Menu) Console.Write($"{(int)stateStr} : {stateStr} | ");
                 }
+
+                
 
                 try
                 {
@@ -56,17 +75,16 @@ namespace DiceGame
                 // // ======== Game ========
                 else if (state == State.Game)
                 {
-                    if (gamemode == Gamemode.PVP)
-                    {
-                        PVP game = new PVP(winCondition, 5, 2);
+                    if (gameSettings.botCount == 0) {
+                        PVP game = new PVP(gameSettings.scoreToWin, gameSettings.diceCount, gameSettings.playerCount);
                         IGame gameHandler = game;
-                        gameHandler.CreatePlayers(2);
+                        gameHandler.CreatePlayers(gameSettings.playerCount);
                         gameHandler.Game();
                     }
                     else {
-                        PVC game = new PVC(winCondition, 5, 2);
+                        PVC game = new PVC(gameSettings.scoreToWin, gameSettings.diceCount, (gameSettings.playerCount + gameSettings.botCount));
                         IGame gameHandler = game;
-                        gameHandler.CreatePlayers(1, 1);
+                        gameHandler.CreatePlayers(gameSettings.playerCount, gameSettings.botCount);
                         gameHandler.Game();
                     }
 
@@ -88,54 +106,18 @@ namespace DiceGame
         }
 
         private static void Setup() {
-            // Ask for gamemode & win-condition
-            string input = string.Empty;
-            int inputCondition = 0;
-            // ======== Set Gamemode ========
-            Console.Write($"\n\nSet Gamemode (Currently: {gamemode}) [PVP], [PVC] : ");
-            try
-            {
-                input = Console.ReadLine();
-                foreach (Gamemode checkGame in Enum.GetValues(typeof(Gamemode)))
-                {
-                    if (input.ToLower() == checkGame.ToString().ToLower())
-                    {
-                        // If a valid sort is given, overwrite the default.
-                        gamemode = checkGame;
-                    }
-                }
+            Settings settings = new Settings();
+            settings.SettingsDialogue();
+            gameSettings = settings;
 
-            }
-            catch (Exception ex) {
-                Console.WriteLine(ex);
-            }
-            Console.WriteLine($"Gamemode is now: {gamemode}");
-
-            // ======== Set Win Condition ========
-            Console.Write($"Set Win-Condition (Currently: {winCondition}pts) : ");
-            try
-            {
-                input = Console.ReadLine();
-                
-                if (Int32.TryParse(input, out inputCondition) == true) {
-                    if (inputCondition > 0 && inputCondition < Int32.MaxValue) { 
-                        winCondition = inputCondition;
-                    }
-                }
-
-            }
-            catch (Exception ex) {
-                Console.WriteLine(ex);
-            }
-            Console.WriteLine($"Win-Condition is now: {winCondition} \n\n");
         }
 
-
+       
         public enum State
         {
             Menu,
-            Settings,
             Game,
+            Settings,
             Exit
         }
 

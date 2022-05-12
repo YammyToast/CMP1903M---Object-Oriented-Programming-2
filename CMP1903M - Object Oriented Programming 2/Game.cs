@@ -170,10 +170,13 @@
             int tableIndent = (consoleWidth / 2) - (longestLength / 2);
             string tablePadding = new string(' ', tableIndent);
 
+            Console.WriteLine("\n\n\n\n\n\n");
             // ==== Write the table to the console ====
             Console.WriteLine($"{tablePadding}{header}");
             foreach (Player player in playerList) {
+
                 string playerType = (player.isBot) ? "Bot" : "Player";
+
                 int currentLineLength = longestLength - (player.ID.ToString().Length + player.Score.ToString().Length + 18);
                 Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  {playerType} - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
             }
@@ -233,7 +236,7 @@
             int playerIndex = 1;
             for (int i = 0; i < numberOfPlayers; i++)
             {
-                playerList.Add(new Player(playerIndex, true));
+                playerList.Add(new Player(playerIndex, false));
                 playerIndex++;
             }
         }
@@ -297,8 +300,8 @@
                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         // Remove this upon creating tie-breaker.
                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        DisplayWinMessage(player);
                         DisplayGameScoreTable(playerList);
+                        DisplayWinMessage(player);
                         finishedState = true;
                         break;
                     }
@@ -402,8 +405,8 @@
                     // Check if the player has won.
                     if (player.Score >= winCondition)
                     {
-                        DisplayWinMessage(player);
                         DisplayGameScoreTable(playerList);
+                        DisplayWinMessage(player);
                         finishedState = true;
                         break;
                     }
