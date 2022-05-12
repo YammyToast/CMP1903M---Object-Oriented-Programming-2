@@ -5,8 +5,6 @@ namespace DiceGame
 {
     class Program {
 
-
-        static int winCondition = 30;
         static Settings gameSettings;
 
         /// Features:
@@ -22,12 +20,7 @@ namespace DiceGame
 
         public static void Main(string[] args) {
 
-            gameSettings = new Settings();
-            gameSettings.playerCount = 2;
-            gameSettings.botCount = 0;
-            gameSettings.diceCount = 5;
-            gameSettings.scoreToWin = 30;
-            gameSettings.scoreMultiplier = 3;
+            gameSettings = new Settings(2, 0, 5, 30, 3, 1, 6 );
 
             State state = State.Menu;
 
@@ -35,7 +28,7 @@ namespace DiceGame
 
                 string stateInput = string.Empty;
 
-                int[] setValues = new int[5] { gameSettings.playerCount, gameSettings.botCount, gameSettings.diceCount, gameSettings.scoreToWin, gameSettings.scoreMultiplier };
+                int[] setValues = new int[7] { gameSettings.playerCount, gameSettings.botCount, gameSettings.diceCount, gameSettings.scoreToWin, gameSettings.scoreMultiplier, gameSettings.lowerDiceBoundary, gameSettings.upperDiceBoundary };
                 int parameterIndex = 0;
                 Console.WriteLine("\n| Game Settings |");
                 foreach (Parameters parameter in Enum.GetValues(typeof(Parameters)))
@@ -76,13 +69,25 @@ namespace DiceGame
                 else if (state == State.Game)
                 {
                     if (gameSettings.botCount == 0) {
-                        PVP game = new PVP(gameSettings.scoreToWin, gameSettings.diceCount, gameSettings.playerCount);
+                        PVP game = new PVP(gameSettings.scoreToWin,
+                            gameSettings.diceCount,
+                            gameSettings.playerCount,
+                            gameSettings.scoreMultiplier,
+                            gameSettings.lowerDiceBoundary,
+                            gameSettings.upperDiceBoundary
+                            );
                         IGame gameHandler = game;
                         gameHandler.CreatePlayers(gameSettings.playerCount);
                         gameHandler.Game();
                     }
                     else {
-                        PVC game = new PVC(gameSettings.scoreToWin, gameSettings.diceCount, (gameSettings.playerCount + gameSettings.botCount));
+                        PVC game = new PVC(gameSettings.scoreToWin,
+                            gameSettings.diceCount,
+                            (gameSettings.playerCount + gameSettings.botCount),
+                            gameSettings.scoreMultiplier,
+                            gameSettings.lowerDiceBoundary,
+                            gameSettings.upperDiceBoundary
+                            );
                         IGame gameHandler = game;
                         gameHandler.CreatePlayers(gameSettings.playerCount, gameSettings.botCount);
                         gameHandler.Game();
@@ -106,7 +111,15 @@ namespace DiceGame
         }
 
         private static void Setup() {
-            Settings settings = new Settings();
+            Settings settings = new Settings(
+                gameSettings.playerCount,
+                gameSettings.botCount,
+                gameSettings.diceCount,
+                gameSettings.scoreToWin,
+                gameSettings.scoreMultiplier,
+                gameSettings.lowerDiceBoundary,
+                gameSettings.upperDiceBoundary
+                );
             settings.SettingsDialogue();
             gameSettings = settings;
 

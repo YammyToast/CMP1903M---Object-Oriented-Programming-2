@@ -13,6 +13,8 @@ namespace DiceGame
         public int diceCount;
         public int scoreToWin;
         public int scoreMultiplier;
+        public int lowerDiceBoundary;
+        public int upperDiceBoundary;
         public int[] setArray;
         public int[,] inputBoundaries;
         /// Amount of players
@@ -21,19 +23,22 @@ namespace DiceGame
         /// Score to win
         /// Score multiplier
 
-        public Settings() {
-            playerCount = 2;
-            botCount = 0;
-            diceCount = 5;
-            scoreToWin = 30;
-            scoreMultiplier = 3;
-            setArray = new int[5] { playerCount, botCount, diceCount, scoreToWin, scoreMultiplier };
-            inputBoundaries = new int[5, 2] { { -1, int.MaxValue }, { -1, int.MaxValue }, { 2, 15 }, { 0, int.MaxValue }, { 1, 100000} };
+        public Settings(int playerCount, int botCount, int diceCount, int scoreToWin,
+             int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) {
+            this.playerCount = playerCount;
+            this.botCount = botCount;
+            this.diceCount = diceCount;
+            this.scoreToWin = scoreToWin;
+            this.scoreMultiplier = scoreMultiplier;
+            this.lowerDiceBoundary = lowerDiceBoundary;
+            this.upperDiceBoundary = upperDiceBoundary;
+            setArray = new int[7] { playerCount, botCount, diceCount, scoreToWin, scoreMultiplier , lowerDiceBoundary, upperDiceBoundary};
+            inputBoundaries = new int[7, 2] { { -1, int.MaxValue }, { -1, int.MaxValue }, { 2, 15 }, { 0, int.MaxValue }, { 1, 100000}, { 0, 99 }, { 0, 99 } };
         }
 
         public void SettingsDialogue()
         {
-            int[] inputVals = new int[5];
+            int[] inputVals = new int[7];
             int index = 0;
             foreach (Parameters parameter in Enum.GetValues(typeof(Parameters)))
             {
@@ -80,7 +85,19 @@ namespace DiceGame
                 catch (Exception ex) {
                     Console.WriteLine(ex.Message);
                 }
-            } 
+            }
+            if (setArray[5] > setArray[6])
+            {
+                try
+                {
+                    setArray[5] = 1;
+                    setArray[6] = 6;
+                    throw new InvalidInputException("\n\nLower Dice Boundary has to be lower than Upper Dice Boundary");
+                }
+                catch (Exception ex) {
+                    Console.WriteLine(ex.Message);
+                }
+            }
 
             // Unpack values
             playerCount = setArray[0];
@@ -88,6 +105,8 @@ namespace DiceGame
             diceCount = setArray[2];
             scoreToWin = setArray[3];
             scoreMultiplier = setArray[4];
+            lowerDiceBoundary = setArray[5];
+            upperDiceBoundary = setArray[6];
         }
 
         
@@ -100,7 +119,9 @@ namespace DiceGame
         BotCount,
         DiceCount,
         ScoreToWin,
-        ScoreMultiplier
+        ScoreMultiplier,
+        LowerDiceBoundary,
+        UpperDiceBoundary
     }
 
     internal class InvalidInputException : Exception { 

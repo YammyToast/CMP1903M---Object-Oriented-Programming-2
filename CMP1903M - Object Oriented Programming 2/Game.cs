@@ -17,13 +17,19 @@
         protected int winCondition;
         protected int numberOfDice;
         protected int numberOfPlayers;
+        protected int scoreMultiplier;
+        protected int lowerDiceBoundary;
+        protected int upperDiceBoundary;
         protected List<int> scores;
         protected List<Player> playerList;
 
-        public Logic(int winCondition, int numberOfDice, int numberOfPlayers) {
+        public Logic(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) {
             this.winCondition = winCondition;
             this.numberOfDice = numberOfDice;
             this.numberOfPlayers = numberOfPlayers;
+            this.scoreMultiplier = scoreMultiplier;
+            this.lowerDiceBoundary = lowerDiceBoundary;
+            this.upperDiceBoundary = upperDiceBoundary;
             scores = new List<int>(numberOfPlayers);
             playerList = new List<Player>();
 
@@ -49,7 +55,7 @@
             // ==== Dice Rolling ==== 
             foreach (Die die in dice) {
                 if (die.Active == true) {
-                    die.Roll(1, 6);
+                    die.Roll(lowerDiceBoundary, upperDiceBoundary);
 
                 }
             }
@@ -74,7 +80,7 @@
             var orderedOccurences = occurences.OrderBy(x => x.Value).Reverse().ToDictionary(x => x.Key, x => x.Value);
 
             // Calculates the score to give the player based on the number of recurring values.
-            int score = (orderedOccurences.First().Value > 2) ? (int)(3 * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
+            int score = (orderedOccurences.First().Value > 2) ? (int)(scoreMultiplier * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
             
             int occurence = orderedOccurences.First().Value;
 
@@ -229,7 +235,7 @@
 
     internal class PVP : Logic, IGame
     {
-        public PVP(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) {}
+        public PVP(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) : base(winCondition, numberOfDice, numberOfPlayers, scoreMultiplier, lowerDiceBoundary, upperDiceBoundary) {}
 
         void IGame.CreatePlayers(int playerCount, int botCount) {
 
@@ -335,7 +341,7 @@
 
     internal class PVC : Logic, IGame
     {
-        public PVC(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) { }
+        public PVC(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) : base(winCondition, numberOfDice, numberOfPlayers, scoreMultiplier, lowerDiceBoundary, upperDiceBoundary) { }
 
         void IGame.CreatePlayers(int playerCount, int botCount) {
             int playerIndex = 1;
