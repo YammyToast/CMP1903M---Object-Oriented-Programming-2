@@ -13,59 +13,81 @@ namespace DiceGame
         public int diceCount;
         public int scoreToWin;
         public int scoreMultiplier;
-        public int lowerDiceBoundary;
         public int upperDiceBoundary;
         public int[] setArray;
         public int[,] inputBoundaries;
-        /// Amount of players
-        /// Amount of bots
-        /// Amount of dice
-        /// Score to win
-        /// Score multiplier
-
+        
+        /// <summary>
+        /// Constructor for the settings object.
+        /// </summary>
+        /// <param name="playerCount">The amount of players to include in the game.</param>
+        /// <param name="botCount">The amount of bots to include in the game.</param>
+        /// <param name="diceCount">The amount of dice to use for each roll.</param>
+        /// <param name="scoreToWin">The score required to reach to win the game.</param>
+        /// <param name="scoreMultiplier">The multiplier used in calculating a turn's score.</param>
+        /// <param name="upperDiceBoundary">The amount of faces to include on each of the dice.</param>
         public Settings(int playerCount, int botCount, int diceCount, int scoreToWin,
-             int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) {
+             int scoreMultiplier,  int upperDiceBoundary) {
+            // Sets the pre-selected selecting as 'defaults'.
             this.playerCount = playerCount;
             this.botCount = botCount;
             this.diceCount = diceCount;
             this.scoreToWin = scoreToWin;
             this.scoreMultiplier = scoreMultiplier;
-            this.lowerDiceBoundary = lowerDiceBoundary;
             this.upperDiceBoundary = upperDiceBoundary;
-            setArray = new int[7] { playerCount, botCount, diceCount, scoreToWin, scoreMultiplier , lowerDiceBoundary, upperDiceBoundary};
-            inputBoundaries = new int[7, 2] { { -1, int.MaxValue }, { -1, int.MaxValue }, { 2, 15 }, { 0, int.MaxValue }, { 1, 100000}, { 0, 99 }, { 0, 99 } };
+
+            // Creates arrays necessary for iterating in the Dialogue.
+            setArray = new int[6] { playerCount, botCount, diceCount, scoreToWin, scoreMultiplier, upperDiceBoundary};
+            inputBoundaries = new int[6, 2] { { -1, int.MaxValue }, { -1, int.MaxValue }, { 2, 15 }, { 0, int.MaxValue }, { 1, 100000}, { 0, 99 } };
         }
 
+        /// <summary>
+        /// Procedure for getting the user-defined settings in a dialogue like fashion.
+        /// </summary>
         public void SettingsDialogue()
         {
+            // Creates a new array to store the selections.
             int[] inputVals = new int[7];
             int index = 0;
+
+            // ==== MAIN DIAGLOGUE ITERATOR ==== 
+            // For each of the selection parameters, create a small dialogue.
             foreach (Parameters parameter in Enum.GetValues(typeof(Parameters)))
             {
                 try
                 {
+                    // Initialise the two values needed to parse the input.
                     string input = string.Empty;
                     int numericInput = setArray[index];
 
+                    // Display the setting that is going to be changed, with the currently set value.
                     Console.WriteLine($"\n\n [ Set {parameter} -> (Currently {setArray[index]}) ]");
                     Console.Write(" : ");
                     input = Console.ReadLine();
+
+                    // Check that the given input is not empty.
                     if (input != string.Empty)
                     {
+                        // Attempt to parse the input as an integer, if possible, set value as numericInput.
                         if (!Int32.TryParse(input, out numericInput))
                         {
+                            // If the number could not be parsed as an integer, throw a custom exception.
                             throw new InvalidInputException($"Non-Numeric value entered for {parameter}!");
                         }
                         if (!(numericInput > inputBoundaries[index, 0] && numericInput < inputBoundaries[index, 1]))
                         {
+                            // If the number is outside of the setting boundaries throw a custom exception.
                             throw new InvalidInputException($"Numeric value for {parameter} is out of range.");
                         }
+                        // If no exception is thrown, save the input in the inputVals array.
                         inputVals[index] = numericInput;
                     }
+                    // If no input is given, assume no change in setting.
                     else {
                         inputVals[index] = setArray[index];
                     }
                     
+                    // Display the new value of the setting to the user.
                     Console.WriteLine($"{parameter} is now set to -> {numericInput}");
                 }
                 catch (Exception ex) { 
@@ -73,46 +95,39 @@ namespace DiceGame
                 }
                 index++;
             }
+            // Set the 'output' settings to the settings given in the dialogue.
             setArray = inputVals;
 
+            // As 2 players are required to play the game, check that the sum of the players and bots is at least 2.
             if (setArray[0] + setArray[1] < 2) {
                 try
                 {
+                    // If there aren't enough players given, set a default of 2 players, 0 bots.
                     setArray[0] = 2;
                     setArray[1] = 0;
+                    // Throw a custom exception, letting the user know of the error.
                     throw new InvalidPlayerCountException("\n\nThere must be at least 2 players (players / bots) for the game to be played");
                 }
                 catch (Exception ex) {
                     Console.WriteLine(ex.Message);
                 }
             }
-            if (setArray[5] > setArray[6])
-            {
-                try
-                {
-                    setArray[5] = 1;
-                    setArray[6] = 6;
-                    throw new InvalidInputException("\n\nLower Dice Boundary has to be lower than Upper Dice Boundary");
-                }
-                catch (Exception ex) {
-                    Console.WriteLine(ex.Message);
-                }
-            }
+           
 
-            // Unpack values
+            // Unpack values into attributes.
             playerCount = setArray[0];
             botCount = setArray[1];
             diceCount = setArray[2];
             scoreToWin = setArray[3];
             scoreMultiplier = setArray[4];
-            lowerDiceBoundary = setArray[5];
-            upperDiceBoundary = setArray[6];
+            upperDiceBoundary = setArray[5];
         }
 
         
       
     }
 
+    // Setting Parameters Enum.
     internal enum Parameters
     {
         PlayerCount,
@@ -120,10 +135,11 @@ namespace DiceGame
         DiceCount,
         ScoreToWin,
         ScoreMultiplier,
-        LowerDiceBoundary,
         UpperDiceBoundary
     }
+    
 
+    // ==== CUSTOM EXCEPTIONS ====
     internal class InvalidInputException : Exception { 
         public InvalidInputException(string message) : base(message) { 
             
