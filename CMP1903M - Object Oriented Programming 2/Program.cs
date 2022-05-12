@@ -48,7 +48,7 @@ namespace DiceGame
                 // ======== State Check ========
 
                 // ======== Setup ========
-                if (state == State.Setup)
+                if (state == State.Settings)
                 {
                     Setup();
                     state = State.Menu;
@@ -134,7 +134,7 @@ namespace DiceGame
         public enum State
         {
             Menu,
-            Setup,
+            Settings,
             Game,
             Exit
         }

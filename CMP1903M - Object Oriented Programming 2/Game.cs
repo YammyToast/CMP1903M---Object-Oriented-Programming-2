@@ -29,9 +29,7 @@
 
         }
 
-        virtual protected void DisplayWinMessage(Player player) { 
-            
-        }
+      
 
         /// Game Logic:
         /// Players take turns rolling five dice and score for three-of-a-kind or better. If a player only has
@@ -175,8 +173,9 @@
             // ==== Write the table to the console ====
             Console.WriteLine($"{tablePadding}{header}");
             foreach (Player player in playerList) {
+                string playerType = (player.isBot) ? "Bot" : "Player";
                 int currentLineLength = longestLength - (player.ID.ToString().Length + player.Score.ToString().Length + 18);
-                Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  Player - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
+                Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  {playerType} - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
             }
             Console.WriteLine($"{tablePadding}{footer}");
         }
@@ -209,8 +208,19 @@
             Console.WriteLine($"{tablePadding}└{tableBars}┘");
         }
 
+        virtual protected void DisplayWinMessage(Player player)
+        {
+            int consoleWidth = Console.WindowWidth;
+            string lineBuffer = $"────|┤  Player-{player.ID} has won the game! ├|────";
 
-        
+            int tableIndent = (consoleWidth / 2) - (lineBuffer.Length / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            Console.WriteLine("\n\n\n");
+            Console.WriteLine($"{tablePadding}{lineBuffer}");
+            Console.WriteLine("\n\n\n");
+        }
+
 
     }
 
@@ -344,17 +354,13 @@
             while (finishedState == false)
             {
 
-                // Writes the scoreboard at the start of each turn rotation.
-                // TODO: Add scoreboard function.
-                foreach (Player player in playerList)
-                {
-                    Console.WriteLine($"> Player {player.ID} : {player.Score}");
-                }
+                DisplayGameScoreTable(playerList);
 
                 // Cycle through each player, giving them a turn.
                 foreach (Player player in playerList)
                 {
-                    Console.WriteLine($"Player {player.ID}'s Turn:");
+                    string playerType = (player.isBot) ? "Bot" : "Player";
+                    Console.WriteLine($"{playerType} {player.ID}'s Turn:");
 
                     List<Die> dice = new List<Die>();
                     for (int i = 0; i < numberOfDice; i++)
@@ -396,6 +402,8 @@
                     // Check if the player has won.
                     if (player.Score >= winCondition)
                     {
+                        DisplayWinMessage(player);
+                        DisplayGameScoreTable(playerList);
                         finishedState = true;
                         break;
                     }
@@ -407,7 +415,7 @@
                 }
 
             }
-            Console.WriteLine("Game Over");
+
 
         }
         private (RollState resultantState, List<Die> dice, int scored) Turn(List<Die> dice, bool isBot)
@@ -433,7 +441,16 @@
 
         protected override void DisplayWinMessage(Player player)
         {
+            int consoleWidth = Console.WindowWidth;
+            string playerType = (player.isBot) ? "Bot" : "Player";
+            string lineBuffer = $"────|┤  {playerType}-{player.ID} has won the game!  ├|────";
 
+            int tableIndent = (consoleWidth / 2) - (lineBuffer.Length / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            Console.WriteLine("\n\n\n");
+            Console.WriteLine($"{tablePadding}{lineBuffer}");
+            Console.WriteLine("\n\n\n");
         }
 
     }
