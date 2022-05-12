@@ -9,4 +9,12 @@
     <StartupObject>DiceGame.Program</StartupObject>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="TestHandler.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="TestHandler.txt" />
+  </ItemGroup>
+
 </Project>

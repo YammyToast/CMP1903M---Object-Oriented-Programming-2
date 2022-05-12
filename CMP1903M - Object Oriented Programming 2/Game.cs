@@ -17,21 +17,25 @@
         protected int winCondition;
         protected int numberOfDice;
         protected int numberOfPlayers;
+        protected int scoreMultiplier;
+        protected int lowerDiceBoundary;
+        protected int upperDiceBoundary;
         protected List<int> scores;
         protected List<Player> playerList;
 
-        public Logic(int winCondition, int numberOfDice, int numberOfPlayers) {
+        public Logic(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) {
             this.winCondition = winCondition;
             this.numberOfDice = numberOfDice;
             this.numberOfPlayers = numberOfPlayers;
+            this.scoreMultiplier = scoreMultiplier;
+            this.lowerDiceBoundary = lowerDiceBoundary;
+            this.upperDiceBoundary = upperDiceBoundary;
             scores = new List<int>(numberOfPlayers);
             playerList = new List<Player>();
 
         }
 
-        virtual protected void DisplayWinMessage(Player player) { 
-            
-        }
+      
 
         /// Game Logic:
         /// Players take turns rolling five dice and score for three-of-a-kind or better. If a player only has
@@ -51,7 +55,7 @@
             // ==== Dice Rolling ==== 
             foreach (Die die in dice) {
                 if (die.Active == true) {
-                    die.Roll(1, 6);
+                    die.Roll(lowerDiceBoundary, upperDiceBoundary);
 
                 }
             }
@@ -76,7 +80,7 @@
             var orderedOccurences = occurences.OrderBy(x => x.Value).Reverse().ToDictionary(x => x.Key, x => x.Value);
 
             // Calculates the score to give the player based on the number of recurring values.
-            int score = (orderedOccurences.First().Value > 2) ? (int)(3 * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
+            int score = (orderedOccurences.First().Value > 2) ? (int)(scoreMultiplier * Math.Pow(2, (double)orderedOccurences.First().Value - 3)) : 0;
             
             int occurence = orderedOccurences.First().Value;
 
@@ -172,11 +176,15 @@
             int tableIndent = (consoleWidth / 2) - (longestLength / 2);
             string tablePadding = new string(' ', tableIndent);
 
+            Console.WriteLine("\n\n\n\n\n\n");
             // ==== Write the table to the console ====
             Console.WriteLine($"{tablePadding}{header}");
             foreach (Player player in playerList) {
+
+                string playerType = (player.isBot) ? "Bot" : "Player";
+
                 int currentLineLength = longestLength - (player.ID.ToString().Length + player.Score.ToString().Length + 18);
-                Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  Player - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
+                Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  {playerType} - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
             }
             Console.WriteLine($"{tablePadding}{footer}");
         }
@@ -209,21 +217,32 @@
             Console.WriteLine($"{tablePadding}└{tableBars}┘");
         }
 
+        virtual protected void DisplayWinMessage(Player player)
+        {
+            int consoleWidth = Console.WindowWidth;
+            string lineBuffer = $"────|┤  Player-{player.ID} has won the game! ├|────";
 
-        
+            int tableIndent = (consoleWidth / 2) - (lineBuffer.Length / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            Console.WriteLine("\n\n\n");
+            Console.WriteLine($"{tablePadding}{lineBuffer}");
+            Console.WriteLine("\n\n\n");
+        }
+
 
     }
 
     internal class PVP : Logic, IGame
     {
-        public PVP(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) {}
+        public PVP(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) : base(winCondition, numberOfDice, numberOfPlayers, scoreMultiplier, lowerDiceBoundary, upperDiceBoundary) {}
 
         void IGame.CreatePlayers(int playerCount, int botCount) {
 
             int playerIndex = 1;
             for (int i = 0; i < numberOfPlayers; i++)
             {
-                playerList.Add(new Player(playerIndex, true));
+                playerList.Add(new Player(playerIndex, false));
                 playerIndex++;
             }
         }
@@ -287,8 +306,8 @@
                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         // Remove this upon creating tie-breaker.
                         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                        DisplayWinMessage(player);
                         DisplayGameScoreTable(playerList);
+                        DisplayWinMessage(player);
                         finishedState = true;
                         break;
                     }
@@ -322,7 +341,7 @@
 
     internal class PVC : Logic, IGame
     {
-        public PVC(int winCondition, int numberOfDice, int numberOfPlayers) : base(winCondition, numberOfDice, numberOfPlayers) { }
+        public PVC(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int lowerDiceBoundary, int upperDiceBoundary) : base(winCondition, numberOfDice, numberOfPlayers, scoreMultiplier, lowerDiceBoundary, upperDiceBoundary) { }
 
         void IGame.CreatePlayers(int playerCount, int botCount) {
             int playerIndex = 1;
@@ -344,17 +363,13 @@
             while (finishedState == false)
             {
 
-                // Writes the scoreboard at the start of each turn rotation.
-                // TODO: Add scoreboard function.
-                foreach (Player player in playerList)
-                {
-                    Console.WriteLine($"> Player {player.ID} : {player.Score}");
-                }
+                DisplayGameScoreTable(playerList);
 
                 // Cycle through each player, giving them a turn.
                 foreach (Player player in playerList)
                 {
-                    Console.WriteLine($"Player {player.ID}'s Turn:");
+                    string playerType = (player.isBot) ? "Bot" : "Player";
+                    Console.WriteLine($"{playerType} {player.ID}'s Turn:");
 
                     List<Die> dice = new List<Die>();
                     for (int i = 0; i < numberOfDice; i++)
@@ -396,6 +411,8 @@
                     // Check if the player has won.
                     if (player.Score >= winCondition)
                     {
+                        DisplayGameScoreTable(playerList);
+                        DisplayWinMessage(player);
                         finishedState = true;
                         break;
                     }
@@ -407,7 +424,7 @@
                 }
 
             }
-            Console.WriteLine("Game Over");
+
 
         }
         private (RollState resultantState, List<Die> dice, int scored) Turn(List<Die> dice, bool isBot)
@@ -433,7 +450,16 @@
 
         protected override void DisplayWinMessage(Player player)
         {
+            int consoleWidth = Console.WindowWidth;
+            string playerType = (player.isBot) ? "Bot" : "Player";
+            string lineBuffer = $"────|┤  {playerType}-{player.ID} has won the game!  ├|────";
 
+            int tableIndent = (consoleWidth / 2) - (lineBuffer.Length / 2);
+            string tablePadding = new string(' ', tableIndent);
+
+            Console.WriteLine("\n\n\n");
+            Console.WriteLine($"{tablePadding}{lineBuffer}");
+            Console.WriteLine("\n\n\n");
         }
 
     }
