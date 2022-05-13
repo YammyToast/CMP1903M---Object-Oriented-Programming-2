@@ -13,14 +13,25 @@ namespace DiceGame
     internal class Die
     {
         // The value for the 'face' of the dice.
-        public int Value { get; set; }
+        private int value; 
+        public int Value 
+        { 
+            get => value;
+            set => this.value = value;
+        }
         int lowerBoundary;
         // The amount of faces on the die.
         int upperBoundary;
 
-        public bool Active = true;
-        public Die(int lowerBoundary, int upperBoundary) { 
-            this.lowerBoundary = lowerBoundary;
+        public bool Active 
+        {
+            get => active;
+            set => active = value;
+        }
+        private bool active = true;
+
+        public Die(int upperBoundary) { 
+            this.lowerBoundary = 1;
             this.upperBoundary = upperBoundary;
         }
 
@@ -31,7 +42,7 @@ namespace DiceGame
             Random rand = new Random();
             // Creates a random integer within the boundaries of the faces.
             int randomNumber = rand.Next(lowerBoundary, upperBoundary + 1);
-            Value = randomNumber;
+            value = randomNumber;
         }
     }
 }

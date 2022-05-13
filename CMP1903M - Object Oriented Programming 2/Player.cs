@@ -15,7 +15,10 @@ namespace DiceGame
         public int ID;
         public int Score;
         // Boolean value used to determine whether the player should be treated as a bot.
-        public bool isBot;
+        private readonly bool isBot;
+        public bool IsBot {
+            get { return isBot; }
+        }
 
         /// <summary>
         /// Player constructor.

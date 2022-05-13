@@ -97,7 +97,7 @@ namespace DiceGame
             foreach (Player player in playerList)
             {
 
-                string playerType = (player.isBot) ? "Bot" : "Player";
+                string playerType = (player.IsBot) ? "Bot" : "Player";
 
                 int currentLineLength = longestLength - (player.ID.ToString().Length + player.Score.ToString().Length + 18);
                 Console.WriteLine($"{tablePadding}{scoreBars[..(currentLineLength / 2)]}  {playerType} - {player.ID} -> {player.Score} {scoreBars[(currentLineLength / 2)..]}");
