@@ -8,7 +8,7 @@ namespace DiceGame
 {
 
     /// <summary>
-    /// Die class.
+    /// Abstracted Die class.
     /// </summary>
     internal class Die
     {
@@ -36,7 +36,7 @@ namespace DiceGame
         }
 
         /// <summary>
-        /// Rolls a new face for the die.
+        /// Abstracted method for throwing a new face for the die.
         /// </summary>
         public void Roll() { 
             Random rand = new Random();
