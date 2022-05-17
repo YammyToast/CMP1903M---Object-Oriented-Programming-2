@@ -16,9 +16,10 @@ namespace DiceGame
         public int upperDiceBoundary;
         public int[] setArray;
         public int[,] inputBoundaries;
-        
+
+
         /// <summary>
-        /// Constructor for the settings object.
+        /// Constructor for the settings object with altered default values.
         /// </summary>
         /// <param name="playerCount">The amount of players to include in the game.</param>
         /// <param name="botCount">The amount of bots to include in the game.</param>
@@ -35,11 +36,33 @@ namespace DiceGame
             this.scoreToWin = scoreToWin;
             this.scoreMultiplier = scoreMultiplier;
             this.upperDiceBoundary = upperDiceBoundary;
-
-            // Creates arrays necessary for iterating in the Dialogue.
-            setArray = new int[6] { playerCount, botCount, diceCount, scoreToWin, scoreMultiplier, upperDiceBoundary};
-            inputBoundaries = new int[6, 2] { { -1, int.MaxValue }, { -1, int.MaxValue }, { 2, 15 }, { 0, int.MaxValue }, { 1, 100000}, { 0, 99 } };
+            SetPresets();
         }
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!! Static Polymorphism Implementation !!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// <summary>
+        /// Constructor for Settings without altered default values.
+        /// </summary>
+        public Settings()  {
+            //2, 0, 5, 30, 3, 6
+            playerCount = 2;
+            botCount = 0;
+            diceCount = 5;
+            scoreToWin = 30;
+            scoreMultiplier = 3;
+            upperDiceBoundary = 6;
+            SetPresets();
+        }
+
+        /// <summary>
+        /// Creates preset arrays necessary for iterating in the Dialogue.
+        /// </summary>
+        public void SetPresets() {
+            setArray = new int[6] { playerCount, botCount, diceCount, scoreToWin, scoreMultiplier, upperDiceBoundary };
+            inputBoundaries = new int[6, 2] { { -1, int.MaxValue }, { -1, int.MaxValue }, { 2, 15 }, { 1, int.MaxValue }, { 1, 100000 }, { 3, 99 } };
+        }
+
 
         /// <summary>
         /// Procedure for getting the user-defined settings in a dialogue like fashion.
@@ -72,12 +95,12 @@ namespace DiceGame
                         if (!Int32.TryParse(input, out numericInput))
                         {
                             // If the number could not be parsed as an integer, throw a custom exception.
-                            throw new InvalidInputException($"Non-Numeric value entered for {parameter}!");
+                            throw new InvalidInputException($"Non-Numeric value entered for {parameter}!", parameter);
                         }
                         if (!(numericInput > inputBoundaries[index, 0] && numericInput < inputBoundaries[index, 1]))
                         {
                             // If the number is outside of the setting boundaries throw a custom exception.
-                            throw new InvalidInputException($"Numeric value for {parameter} is out of range.");
+                            throw new InvalidInputException($"Numeric value for {parameter} is out of range.", parameter);
                         }
                         // If no exception is thrown, save the input in the inputVals array.
                         inputVals[index] = numericInput;
@@ -90,8 +113,10 @@ namespace DiceGame
                     // Display the new value of the setting to the user.
                     Console.WriteLine($"{parameter} is now set to -> {numericInput}");
                 }
-                catch (Exception ex) { 
+                catch (InvalidInputException ex)
+                {
                     Console.WriteLine(ex.Message);
+                    inputVals[(int)ex.parameter] = inputBoundaries[(int)ex.parameter, 0];
                 }
                 index++;
             }
@@ -108,7 +133,7 @@ namespace DiceGame
                     // Throw a custom exception, letting the user know of the error.
                     throw new InvalidPlayerCountException("\n\nThere must be at least 2 players (players / bots) for the game to be played");
                 }
-                catch (Exception ex) {
+                catch (InvalidPlayerCountException ex) {
                     Console.WriteLine(ex.Message);
                 }
             }
@@ -140,11 +165,15 @@ namespace DiceGame
     
 
     // ==== CUSTOM EXCEPTIONS ====
-    internal class InvalidInputException : Exception { 
-        public InvalidInputException(string message) : base(message) { 
-            
-        }
+    internal class InvalidInputException : Exception {
+        public string message;
+        public Parameters parameter;
 
+        public InvalidInputException(string message, Parameters parameter) : base(message) {
+            this.message = message;
+            this.parameter = parameter;
+        }
+            
         public InvalidInputException(string message, Exception inner) : base(message, inner) { 
             
         }

@@ -5,6 +5,7 @@
     interface IGame
     {
         void Game();
+        
         void CreatePlayers(int playerCount, int botCount = 0);
     }
 
@@ -18,7 +19,7 @@
         protected int winCondition;
         protected int numberOfDice;
         protected int numberOfPlayers;
-        protected int scoreMultiplier;
+        protected int scoreMultiplier;  
         protected int upperDiceBoundary;
         protected List<int> scores;
         protected List<Player> playerList;
@@ -425,6 +426,10 @@
 
             return (rollResults.rollState, rollResults.dice, rollResults.score);
         }
+
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!! Dynamic Polymorphism Implementation !!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         /// <summary>
         /// Displays a 'decorated' line to the console of the player that has won the game.
