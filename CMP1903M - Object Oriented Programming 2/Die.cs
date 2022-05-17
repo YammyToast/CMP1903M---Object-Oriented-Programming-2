@@ -8,30 +8,44 @@ namespace DiceGame
 {
 
     /// <summary>
-    /// Die class.
+    /// Abstracted Die class.
     /// </summary>
     internal class Die
     {
         // The value for the 'face' of the dice.
-        public int Value { get; set; }
+        private int value; 
+        public int Value 
+        { 
+            get => value;
+            set => this.value = value;
+        }
+
+        public bool Active 
+        {
+            get => active;
+            set => active = value;
+        }
+
         int lowerBoundary;
         // The amount of faces on the die.
         int upperBoundary;
+        
+        
+        private bool active = true;
 
-        public bool Active = true;
-        public Die(int lowerBoundary, int upperBoundary) { 
-            this.lowerBoundary = lowerBoundary;
+        public Die(int upperBoundary) { 
+            this.lowerBoundary = 1;
             this.upperBoundary = upperBoundary;
         }
 
         /// <summary>
-        /// Rolls a new face for the die.
+        /// Abstracted method for throwing a new face for the die.
         /// </summary>
         public void Roll() { 
             Random rand = new Random();
             // Creates a random integer within the boundaries of the faces.
             int randomNumber = rand.Next(lowerBoundary, upperBoundary + 1);
-            Value = randomNumber;
+            value = randomNumber;
         }
     }
 }

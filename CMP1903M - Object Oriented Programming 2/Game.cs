@@ -5,6 +5,7 @@
     interface IGame
     {
         void Game();
+        
         void CreatePlayers(int playerCount, int botCount = 0);
     }
 
@@ -18,8 +19,7 @@
         protected int winCondition;
         protected int numberOfDice;
         protected int numberOfPlayers;
-        protected int scoreMultiplier;
-        protected int lowerDiceBoundary;
+        protected int scoreMultiplier;  
         protected int upperDiceBoundary;
         protected List<int> scores;
         protected List<Player> playerList;
@@ -32,14 +32,12 @@
         /// <param name="numberOfDice">Number of dice to be rolled on each turn.</param>
         /// <param name="numberOfPlayers">Number of players playing the game. (Includes bots)</param>
         /// <param name="scoreMultiplier">Score multiplier to be used.</param>
-        /// <param name="lowerDiceBoundary">Lowest Rollable Dice Value</param>
         /// <param name="upperDiceBoundary">Highest Rollable Dice Value</param>
         public Logic(int winCondition, int numberOfDice, int numberOfPlayers, int scoreMultiplier, int upperDiceBoundary) {
             this.winCondition = winCondition;
             this.numberOfDice = numberOfDice;
             this.numberOfPlayers = numberOfPlayers;
             this.scoreMultiplier = scoreMultiplier;
-
             this.upperDiceBoundary = upperDiceBoundary;
             scores = new List<int>(numberOfPlayers);
             playerList = new List<Player>();
@@ -221,7 +219,7 @@
                     List<Die> dice = new List<Die>();
                     for (int i = 0; i < numberOfDice; i++) {
                         // Creates die with the user-defined boundaries.
-                        dice.Add(new Die(lowerDiceBoundary, upperDiceBoundary));
+                        dice.Add(new Die(upperDiceBoundary));
                     }
 
                     // Initialise the roll-states.
@@ -348,13 +346,13 @@
 
                 foreach (Player player in playerList)
                 {
-                    string playerType = (player.isBot) ? "Bot" : "Player";
+                    string playerType = (player.IsBot) ? "Bot" : "Player";
                     Console.WriteLine($"{playerType} {player.ID}'s Turn:");
 
                     List<Die> dice = new List<Die>();
                     for (int i = 0; i < numberOfDice; i++)
                     {
-                        dice.Add(new Die(lowerDiceBoundary, upperDiceBoundary));
+                        dice.Add(new Die(upperDiceBoundary));
                     }
 
                     RollState rollState = RollState.Reroll;
@@ -362,7 +360,7 @@
                     int scored = 0;
                     while (rollState == RollState.Reroll)
                     {
-                        turnResults = Turn(dice, player.isBot);
+                        turnResults = Turn(dice, player.IsBot);
 
                         dice = turnResults.dice;
                         scored = turnResults.scored;
@@ -429,6 +427,10 @@
             return (rollResults.rollState, rollResults.dice, rollResults.score);
         }
 
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        // !!!! Dynamic Polymorphism Implementation !!!!
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
         /// <summary>
         /// Displays a 'decorated' line to the console of the player that has won the game.
         /// Includes a special variant for when a bot wins.
@@ -437,7 +439,7 @@
         protected override void DisplayWinMessage(Player player)
         {
             int consoleWidth = Console.WindowWidth;
-            string playerType = (player.isBot) ? "Bot" : "Player";
+            string playerType = (player.IsBot) ? "Bot" : "Player";
             string lineBuffer = $"────|┤  {playerType}-{player.ID} has won the game!  ├|────";
             if (playerType == "Bot")
             {

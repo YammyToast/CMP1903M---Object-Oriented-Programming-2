@@ -23,7 +23,7 @@ namespace DiceGame
         public static void Main(string[] args) {
 
             // Initialise the game settings with default values (as specified in the brief).
-            gameSettings = new Settings(2, 0, 5, 30, 3, 6 );
+            gameSettings = new Settings();
 
             // Initialise the State loop.
             State state = State.Menu;
