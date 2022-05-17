@@ -1,7 +1,0 @@
-﻿
-        /// Features
-        /// 1, 2, 3, 4, 5 - Dice Rolls
-        /// Opening / Closing Gracefully
-        /// Adding Dice Values
-        /// Reaching pre-set fixed value
-  
