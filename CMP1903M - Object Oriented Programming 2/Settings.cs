@@ -18,6 +18,23 @@ namespace DiceGame
         public int[,] inputBoundaries;
 
 
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //!!!! Static Polymorphism Implementation !!!!
+        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        /// <summary>
+        /// Constructor for Settings without altered default values.
+        /// </summary>
+        public Settings()  {
+            //2, 0, 5, 30, 3, 6
+            playerCount = 2;
+            botCount = 0;
+            diceCount = 5;
+            scoreToWin = 30;
+            scoreMultiplier = 3;
+            upperDiceBoundary = 6;
+            SetPresets();
+        }
+
         /// <summary>
         /// Constructor for the settings object with altered default values.
         /// </summary>
@@ -36,22 +53,6 @@ namespace DiceGame
             this.scoreToWin = scoreToWin;
             this.scoreMultiplier = scoreMultiplier;
             this.upperDiceBoundary = upperDiceBoundary;
-            SetPresets();
-        }
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        //!!!! Static Polymorphism Implementation !!!!
-        //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        /// <summary>
-        /// Constructor for Settings without altered default values.
-        /// </summary>
-        public Settings()  {
-            //2, 0, 5, 30, 3, 6
-            playerCount = 2;
-            botCount = 0;
-            diceCount = 5;
-            scoreToWin = 30;
-            scoreMultiplier = 3;
-            upperDiceBoundary = 6;
             SetPresets();
         }
 
@@ -115,8 +116,9 @@ namespace DiceGame
                 }
                 catch (InvalidInputException ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    // Sets the value to the lower boundary if an exception is thrown.
                     inputVals[(int)ex.parameter] = inputBoundaries[(int)ex.parameter, 0];
+                    Console.WriteLine(ex.Message);
                 }
                 index++;
             }

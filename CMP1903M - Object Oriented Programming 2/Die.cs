@@ -19,15 +19,18 @@ namespace DiceGame
             get => value;
             set => this.value = value;
         }
-        int lowerBoundary;
-        // The amount of faces on the die.
-        int upperBoundary;
 
         public bool Active 
         {
             get => active;
             set => active = value;
         }
+
+        int lowerBoundary;
+        // The amount of faces on the die.
+        int upperBoundary;
+        
+        
         private bool active = true;
 
         public Die(int upperBoundary) { 
